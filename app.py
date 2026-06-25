@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+# 🔐 IMPORTACIÓN PARA IMPLEMENTAR OWASP A02 (CRIPTOGRAFÍA DE SEGURIDAD)
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 
@@ -90,11 +92,15 @@ def crear_usuario():
     if not dni or not nombre or not contrasena:
         return render_template('index.html', error="Todos los campos son obligatorios.")
 
+    # 🔐 MITIGACIÓN OWASP A02: Aplicamos hash con salting a la contraseña antes de guardarla
+    password_encriptada = generate_password_hash(contrasena, method='pbkdf2:sha256', salt_length=16)
+
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
+            # Guardamos la password encriptada de forma segura
             cursor.execute('INSERT INTO usuarios (dni, nombre, password) VALUES (?, ?, ?)', 
-                           (dni, nombre, contrasena))
+                           (dni, nombre, password_encriptada))
             conn.commit()
         
         return render_template('index.html', exito="Usuario registrado correctamente. Ya puedes iniciar sesión.")
@@ -116,10 +122,12 @@ def login_usuario():
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT nombre FROM usuarios WHERE dni = ? AND password = ?', (dni, contrasena))
+            # Buscamos al usuario únicamente por su DNI
+            cursor.execute('SELECT nombre, password FROM usuarios WHERE dni = ?', (dni,))
             usuario = cursor.fetchone()
         
-        if usuario:
+        # 🔐 MITIGACIÓN OWASP A02: Verificación criptográfica segura de la contraseña hash
+        if usuario and check_password_hash(usuario['password'], contrasena):
             session['usuario_nombre'] = usuario['nombre']
             return redirect(url_for('dashboard'))
         else:
