@@ -6,16 +6,15 @@ app = Flask(__name__, template_folder='app/templates')
 app.secret_key = 'sistema_tech_2026_key' 
 
 # --- CONFIGURACIÓN DE RUTAS DE BASE DE DATOS ---
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', 'database', 'sistema_tech.db'))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, 'app', 'database', 'sistema_tech.db')
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=20)
+    conn = sqlite3.connect(DATABASE, timeout=20)
     conn.row_factory = sqlite3.Row
     return conn
 
 # --- RUTAS DE NAVEGACIÓN ---
-
 @app.route('/')
 def home():
     return render_template('login.html')
