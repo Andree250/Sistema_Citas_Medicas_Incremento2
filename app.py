@@ -7,10 +7,11 @@ app.secret_key = 'sistema_tech_2026_key'
 
 # --- CONFIGURACIÓN DE RUTAS DE BASE DE DATOS ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE = os.path.join(BASE_DIR, 'app', 'database', 'sistema_tech.db')
+DB_PATH = os.path.join(BASE_DIR, 'app', 'database', 'sistema_tech.db')
+DATABASE = DB_PATH
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE, timeout=20)
+    conn = sqlite3.connect(DB_PATH, timeout=20)
     conn.row_factory = sqlite3.Row
     return conn
 
